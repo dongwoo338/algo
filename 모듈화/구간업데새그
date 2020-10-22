@@ -1,0 +1,13 @@
+ll seg[200004];
+void update(int l, int r, int val) {
+    r++;
+    for (l += n, r += n; l < r; l >>= 1, r >>= 1) {
+        if (l & 1) seg[l++] += val;
+        if (r & 1) seg[--r] += val;
+    }
+}
+ll query(int p) {
+    ll res = 0;
+    for (p += n; p > 0; p >>= 1)res += seg[p];
+    return res;
+}

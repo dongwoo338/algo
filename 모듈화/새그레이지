@@ -1,0 +1,67 @@
+#include <iostream>
+#include <algorithm>
+#include <cmath>
+typedef long long ll;
+using namespace std;
+int n, k, m;
+ll seg[4000001];
+ll prop[4000001];
+int tsiz = 1;
+void prop_update(ll s, ll e,ll ind) {
+	if (prop[ind]) {
+		seg[ind] += (e - s + 1) * prop[ind];
+		if (s != e) {
+			prop[ind * 2] += prop[ind];
+			prop[ind * 2 + 1] += prop[ind];
+		}
+		prop[ind] = 0;
+	}
+}
+void update(ll s, ll e, ll ind, ll pval, ll L, ll R) {
+	prop_update(L, R,ind);
+	if (L >= s && R <= e) {
+		seg[ind] += (R - L + 1)*pval;
+		if (L != R) {
+			prop[ind * 2] += pval;
+			prop[ind * 2 + 1] += pval;
+		}
+		return;
+	}
+	else if (s > R || e < L) return;
+	update(s, e, ind * 2, pval, L, (L + R) / 2);
+	update(s, e, ind * 2 + 1, pval, (L + R) / 2 + 1, R);
+	seg[ind] = seg[ind * 2] + seg[ind * 2 + 1];
+}
+ll Q(ll s, ll e, ll ind, ll L, ll R) {
+	prop_update(L, R,ind);
+	if (L >= s && R <= e) return seg[ind];
+	else if (s > R || e < L) return 0;
+	return Q(s, e, ind * 2, L, (L + R) / 2) + Q(s, e, ind * 2 + 1, (L + R) / 2 + 1, R);
+}
+int main() {
+	ios::sync_with_stdio(false);
+	cin.tie(0);
+	cout.tie(0);
+	cin >> n >> k >> m;
+	tsiz = ceil(log2(n));
+	tsiz = 1 << tsiz;
+	for (int i = 0; i < n; i++) {
+		int iti;
+		cin >> iti;
+		seg[i + tsiz] = iti;
+	}
+	for (int i = tsiz - 1; i >= 1; i--) seg[i] = seg[i * 2] + seg[i * 2 + 1];
+	for (int i = 0; i < k+m; i++) {
+		int n1, n2, n3, n4;
+		cin >> n1;
+		if (n1 == 1) {
+			cin >> n2 >> n3 >> n4;
+			update(n2, n3, 1, n4, 1, tsiz);
+		}
+		if (n1 == 2) {
+			cin >> n2 >> n3;
+			cout << Q(n2, n3, 1, 1, tsiz) << "\n";
+		}
+	}
+	return 0;
+}
