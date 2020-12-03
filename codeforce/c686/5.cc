@@ -2,57 +2,69 @@
 using namespace std;
 typedef long long ll;
 const int MAX = 2e9;
-typedef pair<int,int> pi;
-const int N = (int)2e6+5;
-int p[N],d[N];
-int find(int x) {
-	if (p[x] < 0) return x;
-	return p[x] = find(p[x]);
-}
-bool merge(int a, int b) {
-	a = find(a); b = find(b);
-    if(a==b)return 0;
-	if(a!=b)p[b] = a;
-    return 1;
-}
+typedef pair<int, int> pi;
+int t;
 vector<vector<int>>g;
-int s,e;
-int main(){
-    ios::sync_with_stdio(0);cin.tie(0);cout.tie(0);
-    int t;
-    cin >> t;
-    while(t--){
-        ll n;
-        cin >> n;
-        g.clear();
-        g.resize(n+1);
-        memset(p,-1,sizeof(p));
-        memset(d,-1,sizeof(d));
-        for(int i =0 ; i < n; i++){
-            int u,v;
-            cin >> u>> v;
-            if(!merge(u,v)){
-                s= u; e= v;
+const int N = (int)2e5 + 5;
+bool vis[N];
+bool cycle[N];
+stack<int> st;
+bool iscycle = 0;
+void dfs(int u, int pu) {
+    vis[u] = 1;
+    st.push(u);
+    for (int v : g[u]) {
+        if (iscycle)return;
+        if (v == pu)continue;
+        if (vis[v]) {
+            iscycle = 1;
+            while (1) {
+                int h = st.top(); st.pop();
+                cycle[h] = 1;
+                if (h == v)break;
             }
-            else{
-                g[u].push_back(v);
-                g[v].push_back(u);
-            }
-            d[u]=0;
-            queue<int>q;
-            q.push(s);
-            while(q.size()){
-                int u = q.front();q.pop();
-                for(int v : g[u]){
-                    if(d[v]==-1){
-                        d[v]=d[u]+1;
-                        q.push(v);
-                    }
-                }
-            }
-            ll ans= n*(n-1);
-            ans -= (n-1-d[e]);
-            cout << ans << "\n";
+            return;
         }
+        else dfs(v, u);
+    }
+    if (iscycle)return;
+    st.pop();
+}
+int dfs2(int u, int pu) {
+    int ret = 1;
+    for (int v : g[u]) {
+        if (!cycle[v] && v != pu) {
+            ret += dfs2(v, u);
+        }
+    }
+    return ret;
+}
+int main() {
+    ios::sync_with_stdio(0); cin.tie(0); cout.tie(0);
+    cin >> t;
+    while (t--) {
+        int n;
+        cin >> n;
+        iscycle = 0;
+        memset(vis, 0, sizeof(vis));
+        memset(cycle, 0, sizeof(cycle));
+        g.clear();
+        g.resize(n + 1);
+        for (int i = 0; i < n; i++) {
+            int u, v;
+            cin >> u >> v;
+            g[u].push_back(v);
+            g[v].push_back(u);
+        }
+        dfs(1, 0);
+        ll ans = 0;
+        for (int i = 1; i <= n; i++) {
+            if (cycle[i]) {
+                int c = dfs2(i, 0);// number of node of tree(each root is node on cycle)
+                ans += 1LL*c * (c - 1) / 2;
+                ans += 1LL*c * (n - c);
+            }
+        }
+        cout << ans << "\n";
     }
 }
