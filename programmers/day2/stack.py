@@ -33,11 +33,12 @@ def solution(S):
         #c가 문자이면 그냥 출력
         if c == ')':
             while(opStack.size()):
-                if(opStack.top()=='('):
+                if(opStack.peek()=='('):
                     opStack.pop()
                     break
-
-        elif c not in prec:
+                answer += opStack.peek()
+                opStack().pop()
+        elif c not in prec and c != '(':
             answer+=c
         elif c == '(':
             opStack.push(c)
@@ -48,6 +49,15 @@ def solution(S):
                 opStack.push(c)
 
             # stack top의 우선순위가 더 높으면
-            if()
+            elif(prec[opStack.peek()]>=prec[c]):
+                answer += opStack.peek()
+                opStack.pop()
+                opStack.push(c)
+            else:
+                opStack.push(c)
+    while(opStack.size()):
+        answer+=opStack.peek()
+        opStack.pop()
     return answer
 
+print(solution("(A+B)"))
